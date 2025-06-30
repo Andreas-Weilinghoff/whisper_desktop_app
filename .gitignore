@@ -1,0 +1,19 @@
+# Ignore build files and executables
+build/
+dist/
+*.spec
+
+# Ignore Python cache
+__pycache__/
+*.pyc
+
+# Ignore log files and settings
+*.log
+settings.json
+
+# Ignore test output files
+test/*.txt
+test/*.srt
+
+# Ignore Word documents
+*.docx

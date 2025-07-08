@@ -17,20 +17,16 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install Homebrew packages
-        run: |
-          brew install ffmpeg
-
       - name: Set up Python environment and install dependencies
         run: |
           python3 -m venv venv
-          source venv/bin/activate
+          . venv/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Build the app using PyInstaller
         run: |
-          source venv/bin/activate
+          . venv/bin/activate
           pyinstaller --windowed --onefile main_app.py \
             --icon=app_icon.ico \
             --add-data "UK_Logo_white.png:." \

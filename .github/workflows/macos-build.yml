@@ -20,14 +20,12 @@ jobs:
       - name: Set up Python environment and install dependencies
         run: |
           python3 -m venv venv
-          . venv/bin/activate
-          pip install --upgrade pip
-          pip install -r requirements.txt
+          ./venv/bin/pip install --upgrade pip
+          ./venv/bin/pip install -r requirements.txt
 
       - name: Build the app using PyInstaller
         run: |
-          . venv/bin/activate
-          pyinstaller --windowed --onefile main_app.py \
+          ./venv/bin/pyinstaller --windowed --onefile main_app.py \
             --icon=app_icon.ico \
             --add-data "UK_Logo_white.png:." \
             --add-data "AW_logo.png:." \

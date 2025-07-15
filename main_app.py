@@ -10,6 +10,7 @@ import shutil
 import tempfile
 import sys
 import webbrowser
+from translations import translations
 
 SETTINGS_FILE = "settings.json"
 
@@ -37,14 +38,32 @@ def save_settings(settings):
 class TranscriptionApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("KI-Transkriptionsprogramm")
+        self.current_lang = tk.StringVar(value="en")
+        self.root.title("AI Transcription Tool")
         self.root.geometry("700x700")
         self.root.option_add("*Font", ("Arial", 11))
+
+        # Model mapping from display names to Whisper model names
+        self.model_mapping = {
+            # German display names
+            "winzig": "tiny",
+            "mittel": "medium",
+            "mittelgroß (effizienter)": "turbo",
+            "groß": "large",
+            "groß (neuere Version)": "large-v3",
+            
+            # English display names
+            "tiny": "tiny",
+            "medium": "medium",
+            "medium (efficient)": "turbo",
+            "large": "large",
+            "large (newer version)": "large-v3"
+        }
 
         self.audio_files = []
         self.output_dir = tk.StringVar()
 
-        self.model_choice = tk.StringVar(value="winzig")
+        self.model_choice = tk.StringVar(value="tiny")
         self.language_choice = tk.StringVar(value="de")
         self.punctuate = tk.BooleanVar()
         self.include_srt = tk.BooleanVar()
@@ -53,13 +72,15 @@ class TranscriptionApp:
         self.aw_logo = PhotoImage(file=resource_path("AW_logo.png")).subsample(2, 2)
 
         settings = load_settings()
-        self.model_choice.set(settings.get("model", "winzig"))
+        self.model_choice.set(settings.get("model", "tiny"))
         self.output_dir.set(settings.get("output_dir", ""))
         self.language_choice.set(settings.get("language", "de"))
         self.punctuate.set(settings.get("punctuate", False))
         self.include_srt.set(settings.get("include_srt", False))
+        self.current_lang.set(settings.get("language_ui", "en"))
 
         self._build_ui()
+        self.update_ui_language()
 
     def _build_ui(self):
         style = ttk.Style()
@@ -93,7 +114,6 @@ class TranscriptionApp:
 
         frm = frm_container
 
-
         # Header Frame with logo and title
         header_frame = ttk.Frame(frm)
         header_frame.pack(fill="x", pady=(0, 10))
@@ -103,91 +123,165 @@ class TranscriptionApp:
         aw_logo_label.pack(side="left", padx=10)
         aw_logo_label.bind("<Button-1>", lambda e: webbrowser.open("https://andreas-weilinghoff.com/"))
 
+        # Language switch
+        lang_frame = ttk.Frame(header_frame)
+        lang_frame.pack(side="right", padx=10)
+        
+        self.en_btn = ttk.Button(lang_frame, text="EN", width=3,
+                                command=lambda: self.set_language("en"))
+        self.de_btn = ttk.Button(lang_frame, text="DE", width=3,
+                                command=lambda: self.set_language("de"))
+        self.en_btn.pack(side="right", padx=2)
+        self.de_btn.pack(side="right", padx=2)
 
-        ttk.Label(
+        self.title_label = ttk.Label(
             header_frame,
-            text="KI-Transkriptionsprogramm",
+            text="",
             font=("Arial", 14, "bold"),
             anchor="center",
             justify="center"
-        ).pack(side="left", padx=10, expand=True)
+        )
+        self.title_label.pack(side="left", padx=10, expand=True)
         
         uni_logo_label = ttk.Label(header_frame, image=self.logo_image, cursor="hand2")
         uni_logo_label.pack(side="right", padx=10)
         uni_logo_label.bind("<Button-1>", lambda e: webbrowser.open("https://www.uni-koblenz.de/de"))
 
-
-        self.short_text = "Diese App transkribiert automatisch beliebige Audio- und Mediendateien..."
-        self.full_text = """
-Diese App transkribiert automatisch beliebige Audio- und Mediendateien (z. B. .wav, .mp3, .mp4, .mov, .ogg) in geschriebenen Text.
-Die KI-basierte Anwendung läuft lokal auf Ihrem Gerät - Daten werden nicht weitergeleitet. Die App wurde entwickelt von JProf. Dr. Andreas Weilinghoff [https://andreas-weilinghoff.com] und Saran Nair (M.Sc.) an der Universität Koblenz [https://www.uni-koblenz.de/de].
-
-So funktioniert's:
-Wählen Sie unten eine Datei aus, bestimmen Sie das gewünschte KI-Modell zur Transkription (je größer das Modell, desto besser das Ergebnis - allerdings verlängert sich dadurch auch die Verarbeitungszeit), legen Sie die Sprache fest und wählen Sie auf Ihrem Gerät den Speicherort für das fertige Transkript. Klicken Sie dann einfach auf 'Transkribieren starten'.
-
-Bitte beachten Sie:
-Die Dauer der Verarbeitung hängt von der Länge der Datei, der Größe des gewählten Modells sowie der Rechenleistung Ihres Geräts ab - in manchen Fällen kann die Transkription entsprechend mehr Zeit in Anspruch nehmen.
-            """
-
-        self.description_label = ttk.Label(frm, text=self.short_text, wraplength=650, justify="left")
+        # Description
+        self.description_label = ttk.Label(frm, text="", wraplength=650, justify="left")
         self.description_label.pack(pady=(0, 10))
 
-        self.toggle_button = ttk.Button(frm, text="..mehr", command=self.toggle_description)
+        self.toggle_button = ttk.Button(frm, text="", command=self.toggle_description)
         self.toggle_button.pack()
 
-        ttk.Button(frm, text="Audiodateien auswählen", command=self.select_files).pack(pady=5)
-        self.file_label = ttk.Label(frm, text="Keine Datei ausgewählt")
+        self.select_files_btn = ttk.Button(frm, text="", command=self.select_files)
+        self.select_files_btn.pack(pady=5)
+        self.file_label = ttk.Label(frm, text="")
         self.file_label.pack(pady=5)
 
-        ttk.Label(frm, text="Speicherort wählen:").pack(anchor="w")
+        self.output_dir_label = ttk.Label(frm, text="")
+        self.output_dir_label.pack(anchor="w")
         path_frame = ttk.Frame(frm)
         path_frame.pack(fill="x", pady=5)
         ttk.Entry(path_frame, textvariable=self.output_dir, width=45).pack(side="left", fill="x", expand=True, padx=5)
-        ttk.Button(path_frame, text="Durchsuchen", command=self.select_output_folder).pack(side="left")
+        self.browse_btn = ttk.Button(path_frame, text="", command=self.select_output_folder)
+        self.browse_btn.pack(side="left")
 
-        ttk.Label(frm, text="Modell wählen:").pack(anchor="w", pady=(10, 0))
-        model_display = {"tiny": "winzig", "medium": "mittel", "turbo": "mittelgroß (effizienter)", "large": "groß", "large-v3": "groß (neuere Version)"}
-        ttk.Combobox(frm, textvariable=self.model_choice, values=list(model_display.values()), width=25).pack(pady=(0, 10))
+        self.model_label = ttk.Label(frm, text="")
+        self.model_label.pack(anchor="w", pady=(10, 0))
+        self.model_combobox = ttk.Combobox(frm, textvariable=self.model_choice, width=25)
+        self.model_combobox.pack(pady=(0, 10))
+        self.update_model_options()
 
-        ttk.Label(frm, text="Sprache wählen:").pack(anchor="w")
-        ttk.Combobox(frm, textvariable=self.language_choice, values=["de", "en", "fr", "es", "it"], width=25).pack(pady=(0, 10))
+        self.language_label = ttk.Label(frm, text="")
+        self.language_label.pack(anchor="w")
+        self.language_combobox = ttk.Combobox(frm, textvariable=self.language_choice, values=["de", "en", "fr", "es", "it"], width=25)
+        self.language_combobox.pack(pady=(0, 10))
 
-        ttk.Label(frm, text="Die Defaultsprache ist Deutsch (de), aber das Modell kann auch mit weiteren Sprachen arbeiten. Wenn die Datei nicht deutsch ist, tippen Sie hier einfach manuell den Namen oder Code für die jeweilige Sprache ein. Die vollständige Sprachliste entnehmen Sie bitte dem Handbuch.", wraplength=650, justify="left").pack(pady=(0, 10))
+        self.language_note = ttk.Label(frm, text="", wraplength=650, justify="left")
+        self.language_note.pack(pady=(0, 10))
 
         punctuate_frame = ttk.Frame(frm)
         punctuate_frame.pack(anchor="w", pady=3)
-        ttk.Checkbutton(punctuate_frame, text="Zeichensetzung bei Diktataufnahmen", variable=self.punctuate).pack(side="left")
-        ttk.Button(punctuate_frame, text="?", width=2, command=self.toggle_punctuate_info).pack(side="left", padx=5)
+        self.punctuate_cb = ttk.Checkbutton(punctuate_frame, variable=self.punctuate)
+        self.punctuate_cb.pack(side="left")
+        self.punctuate_info_btn = ttk.Button(punctuate_frame, text="?", width=2, command=self.toggle_punctuate_info)
+        self.punctuate_info_btn.pack(side="left", padx=5)
 
-        self.punctuate_info = ttk.Label(frm, text="Wenn Ihre Audiodatei Begriffe wie 'PUNKT' zur Kennzeichnung von Satzzeichen enthält, können diese durch Aktivieren dieser Checkbox automatisch in die entsprechenden Satzzeichen umgewandelt werden.", wraplength=650, justify="left")
+        self.punctuate_info = ttk.Label(frm, text="", wraplength=650, justify="left")
         self.punctuate_info.pack_forget()
 
         srt_frame = ttk.Frame(frm)
         srt_frame.pack(anchor="w", pady=3)
-        ttk.Checkbutton(srt_frame, text="SRT-Datei erzeugen", variable=self.include_srt).pack(side="left")
-        ttk.Button(srt_frame, text="?", width=2, command=self.toggle_srt_info).pack(side="left", padx=5)
+        self.srt_cb = ttk.Checkbutton(srt_frame, variable=self.include_srt)
+        self.srt_cb.pack(side="left")
+        self.srt_info_btn = ttk.Button(srt_frame, text="?", width=2, command=self.toggle_srt_info)
+        self.srt_info_btn.pack(side="left", padx=5)
 
-        self.srt_info = ttk.Label(frm, text="Eine SRT-Datei ist eine zeitgestempelte Textdatei. Bei Aktivierung dieser Checkbox wird automatisch neben dem normalen Text-Output (TXT-Datei) auch eine SRT-Datei erstellt.", wraplength=650, justify="left")
+        self.srt_info = ttk.Label(frm, text="", wraplength=650, justify="left")
         self.srt_info.pack_forget()
 
-        ttk.Button(frm, text="Transkribieren starten", command=self.start_transcription).pack(pady=10)
+        self.start_btn = ttk.Button(frm, text="", command=self.start_transcription)
+        self.start_btn.pack(pady=10)
 
-        self.status_label = ttk.Label(frm, text="Bereit.", foreground="lightgreen")
+        self.status_label = ttk.Label(frm, text="", foreground="lightgreen")
         self.status_label.pack(pady=10)
 
-        ttk.Label(frm, text="(C) 2025 | Saran Nair & Andreas Weilinghoff | University of Koblenz", font=("Arial", 8)).pack(side="bottom", pady=10)
+        self.copyright_label = ttk.Label(frm, text="", font=("Arial", 8))
+        self.copyright_label.pack(side="bottom", pady=10)
+
+    def update_model_options(self):
+        """Update model combobox options based on current language"""
+        lang = self.current_lang.get()
+        trans = translations[lang]
+        self.model_combobox['values'] = trans["model_options"]
+        
+        # Try to preserve current selection if it exists in new options
+        current_val = self.model_choice.get()
+        if current_val not in trans["model_options"]:
+            # Reset to first option if current not available
+            self.model_choice.set(trans["model_options"][0])
+    
+    def set_language(self, lang):
+        self.current_lang.set(lang)
+        self.update_ui_language()
+        self.update_model_options()
+        save_settings({
+            "model": self.model_choice.get(),
+            "output_dir": self.output_dir.get(),
+            "language": self.language_choice.get(),
+            "punctuate": self.punctuate.get(),
+            "include_srt": self.include_srt.get(),
+            "language_ui": lang
+        })
+
+    def update_ui_language(self):
+        lang = self.current_lang.get()
+        trans = translations[lang]
+        
+        # Update UI elements
+        self.root.title(trans["app_title"])
+        self.title_label.config(text=trans["app_title"])
+        self.description_label.config(text=trans["description_short"])
+        self.toggle_button.config(text=trans["more"])
+        self.file_label.config(text=trans["no_file"])
+        self.status_label.config(text=trans["ready"])
+        
+        # Update buttons and labels
+        self.output_dir_label.config(text=trans["output_dir"])
+        self.model_label.config(text=trans["model"])
+        self.language_label.config(text=trans["language"])
+        self.language_note.config(text=trans["language_note"])
+        self.punctuate_cb.config(text=trans["punctuate"])
+        self.srt_cb.config(text=trans["srt"])
+        self.start_btn.config(text=trans["start"])
+        self.copyright_label.config(text=trans["copyright"])
+        self.select_files_btn.config(text=trans["select_files"])
+        self.browse_btn.config(text=trans["browse"])
+        self.punctuate_info_btn.config(text=trans["info"])
+        self.srt_info_btn.config(text=trans["info"])
+        
+        # Update combobox values
+        self.model_combobox['values'] = trans["model_options"]
+        
+        # Update info text
+        self.punctuate_info.config(text=trans["punctuate_info"])
+        self.srt_info.config(text=trans["srt_info"])
 
     def hide_all_info(self):
         self.punctuate_info.pack_forget()
         self.srt_info.pack_forget()
 
     def toggle_description(self):
-        if self.description_label["text"] == self.short_text:
-            self.description_label["text"] = self.full_text
-            self.toggle_button["text"] = "..weniger"
+        lang = self.current_lang.get()
+        trans = translations[lang]
+        
+        if self.description_label["text"] == trans["description_short"]:
+            self.description_label["text"] = trans["description_full"]
+            self.toggle_button["text"] = trans["less"]
         else:
-            self.description_label["text"] = self.short_text
-            self.toggle_button["text"] = "..mehr"
+            self.description_label["text"] = trans["description_short"]
+            self.toggle_button["text"] = trans["more"]
 
     def toggle_punctuate_info(self):
         self.hide_all_info()
@@ -199,15 +293,15 @@ Die Dauer der Verarbeitung hängt von der Länge der Datei, der Größe des gew�
         if not self.srt_info.winfo_ismapped():
             self.srt_info.pack()
 
-
     def select_files(self):
+        lang = self.current_lang.get()
         files = filedialog.askopenfilenames(filetypes=[("Audio Files", "*.wav *.mp3 *.m4a *.mp4 *.mov *.ogg")])
         if files:
             self.audio_files = files
-            self.file_label.config(text=f"{len(files)} Datei(en) ausgewählt")
+            self.file_label.config(text=f"{len(files)} {translations[lang]['files_selected']}")
         else:
             self.audio_files = []
-            self.file_label.config(text="Keine Datei ausgewählt")
+            self.file_label.config(text=translations[lang]["no_file"])
 
     def select_output_folder(self):
         folder = filedialog.askdirectory()
@@ -215,25 +309,32 @@ Die Dauer der Verarbeitung hängt von der Länge der Datei, der Größe des gew�
             self.output_dir.set(folder)
 
     def start_transcription(self):
+        lang = self.current_lang.get()
         if not self.audio_files:
-            messagebox.showerror("Fehler", "Bitte wählen Sie mindestens eine Audiodatei.")
+            messagebox.showerror("Error", translations[lang]["error_file"])
             return
         if not self.output_dir.get():
-            messagebox.showerror("Fehler", "Bitte wählen Sie einen Speicherort.")
+            messagebox.showerror("Error", translations[lang]["error_dir"])
             return
 
+        # Map displayed model name to actual Whisper model name
+        model_display = self.model_choice.get()
+        model_actual = self.model_mapping.get(model_display, model_display)
+        
         save_settings({
-            "model": self.model_choice.get(),
+            "model": model_actual,
             "output_dir": self.output_dir.get(),
             "language": self.language_choice.get(),
             "punctuate": self.punctuate.get(),
-            "include_srt": self.include_srt.get()
+            "include_srt": self.include_srt.get(),
+            "language_ui": lang
         })
 
-        self.status_label.config(text="Transkription läuft...", foreground="orange")
+        self.status_label.config(text=translations[lang]["processing"].format(""), foreground="orange")
         threading.Thread(target=self.run_transcription, daemon=True).start()
 
     def run_transcription(self):
+        lang = self.current_lang.get()
         for file in self.audio_files:
             try:
                 temp_dir = tempfile.mkdtemp()
@@ -241,21 +342,30 @@ Die Dauer der Verarbeitung hängt von der Länge der Datei, der Größe des gew�
                 shutil.copy(file, local_path)
 
                 logging.info("Starting transcription for: %s", file)
-                self.status_label.config(text=f"Verarbeite: {os.path.basename(file)}")
+                
+                # Map displayed model name to actual Whisper model name
+                model_display = self.model_choice.get()
+                model_actual = self.model_mapping.get(model_display, model_display)
+                
+                self.status_label.config(
+                    text=translations[lang]["processing"].format(os.path.basename(file)),
+                    foreground="orange"
+                )
+                self.status_label.update_idletasks()
 
                 transcribe_audio_file(
                     local_path,
                     self.output_dir.get(),
-                    self.model_choice.get(),
-                    self.language_choice.get(),
-                    self.punctuate.get(),
-                    self.include_srt.get()
+                    model_name=model_actual,
+                    language=self.language_choice.get(),
+                    apply_punctuation=self.punctuate.get(),
+                    generate_srt_file=self.include_srt.get()
                 )
                 logging.info("Finished transcription for: %s", file)
             except Exception as e:
                 logging.error("Error processing %s: %s", file, str(e))
-                messagebox.showerror("Fehler bei Transkription", str(e))
-        self.status_label.config(text="Fertig!", foreground="green")
+                messagebox.showerror("Transcription Error", str(e))
+        self.status_label.config(text=translations[lang]["finished"], foreground="green")
 
 if __name__ == '__main__':
     root = tk.Tk()

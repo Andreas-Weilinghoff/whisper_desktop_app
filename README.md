@@ -34,4 +34,12 @@ The latest Windows executable: [Download main_app.exe](https://github.com/Andrea
 
 ---
 
+## 🖼️ Screenshots
+
+<h3>🇬🇧 English Interface &nbsp;&nbsp;&nbsp;&nbsp; 🇩🇪 German Interface</h3>
+<p float="left">
+  <img src="screenshots/main_interface_en.png" width="45%"/>
+  <img src="screenshots/main_interface_de.png" width="45%"/>
+</p>
+
 

@@ -4,12 +4,13 @@ import os
 from punctuation_replacer import transform_text_content
 from generate_srt import generate_srt
 
-def transcribe_audio_file(filepath, output_dir, model_name="base", diarize=False, apply_punctuation=False, generate_srt_file=False):
+def transcribe_audio_file(filepath, output_dir, model_name="base", language="de", 
+                          diarize=False, apply_punctuation=False, generate_srt_file=False):
     model = whisper.load_model(model_name)
-    result = model.transcribe(filepath, language="de")
+    result = model.transcribe(filepath, language=language)
 
     if not isinstance(result, dict) or "text" not in result:
-        raise ValueError("Whisper Transkriptionsausgabe ungültig")
+        raise ValueError("Invalid Whisper transcription output")
 
     text = result["text"]
     if apply_punctuation:

@@ -6,7 +6,7 @@ The app runs **locally on your device** and does not transfer data externally.
 ---
 
 ## 📥 Download
-The latest Windows executable: [Download main_app.exe](https://github.com/Andreas-Weilinghoff/whisper_desktop_app/releases/download/v1.0.0/main_app.exe)
+The latest Windows executable: [Download main_app.exe](https://github.com/Andreas-Weilinghoff/whisper_desktop_app/releases/download/v1.1.0/main_app.exe)
 
 *Note: This version is a pre-release and intended for internal use only.*
 

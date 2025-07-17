@@ -8,6 +8,8 @@ The app runs **locally on your device** and does not transfer data externally.
 ## 📥 Download
 The latest Windows executable: [Download main_app.exe](https://github.com/Andreas-Weilinghoff/whisper_desktop_app/releases/download/v1.1.0/main_app.exe)
 
+The latest Linux (Debian) executable: [Download transcriber_1.0_amd64.deb](https://drive.google.com/file/d/1n9JbqiXPrNrjd5grHntJNDTpKhiHRUdg/view?usp=drive_link)
+
 *Note: This version is a pre-release and intended for internal use only.*
 
 ---
@@ -31,6 +33,10 @@ The latest Windows executable: [Download main_app.exe](https://github.com/Andrea
 1. Download and double-click the `main_app.exe` file inside 'dist' folder (If you are choosing to build the app).
 2. Ensure `ffmpeg` is installed and added to your system `PATH`.
 3. Select an audio file, configure options, and start transcription.
+
+### Linux (Debian)
+1. Decompress first using : xz -d transcriber_1.0_amd64.deb.xz
+2. Install using : sudo dpkg -i transcriber_1.0_amd64.deb
 
 ---
 

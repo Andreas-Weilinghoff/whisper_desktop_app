@@ -22,7 +22,7 @@ The latest Linux (Debian) executable: [Download transcriber_1.0_amd64.deb](https
 * Optional punctuation formatting for dictation-style recordings
 * Optional generation of `.srt` (subtitle) files
 * Scrollable, user-friendly interface with expandable information sections
-* Embedded links to Prof. Weilinghoff's and the University of Koblenz's websites
+* Embedded links to the websites of Andreas Weilinghoff and the University of Koblenz
 
 ---
 

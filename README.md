@@ -17,7 +17,7 @@ The latest Linux (Debian) executable: [Download transcriber_1.0_amd64.deb](https
 ## 📂 Features
 
 * Supports audio and video files: `.wav`, `.mp3`, `.m4a`, `.mp4`, `.mov`, `.ogg`
-* Choose from multiple transcription models (winzig, mittel, groß, etc.)
+* Choose from multiple transcription models (tiny, medium, large, etc.)
 * Supports multiple languages with manual language selection
 * Optional punctuation formatting for dictation-style recordings
 * Optional generation of `.srt` (subtitle) files
@@ -32,7 +32,7 @@ The latest Linux (Debian) executable: [Download transcriber_1.0_amd64.deb](https
 
 1. Download and double-click the `main_app.exe` file inside 'dist' folder (If you are choosing to build the app).
 2. Ensure `ffmpeg` is installed and added to your system `PATH`.
-3. Select an audio file, configure options, and start transcription.
+3. Select an audio file, configure options and start transcription.
 
 ### Linux (Debian)
 1. Decompress first using : xz -d transcriber_1.0_amd64.deb.xz

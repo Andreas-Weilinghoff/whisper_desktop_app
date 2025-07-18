@@ -1,4 +1,4 @@
-# KI-Transkriptionsprogramm – Universität Koblenz
+# AI Transcription App
 
 A desktop transcription application for automatically converting audio and media files into written text using AI-based models.
 The app runs **locally on your device** and does not transfer data externally.

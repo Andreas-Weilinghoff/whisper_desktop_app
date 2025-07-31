@@ -40,6 +40,10 @@ The latest Linux (Debian) executable: [Download transcriber_1.0_amd64.deb](https
 
 ---
 
+## 📚 How to Cite
+
+Weilinghoff, A. and Nair, S. (2025). AI Transcription Desktop App. https://github.com/Andreas-Weilinghoff/whisper_desktop_app
+
 ## 🖼️ Screenshots
 
 <h3>🇬🇧 English Interface &nbsp;&nbsp;&nbsp;&nbsp; 🇩🇪 German Interface</h3>

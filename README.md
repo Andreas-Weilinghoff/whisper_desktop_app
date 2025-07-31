@@ -38,7 +38,9 @@ The latest Linux (Debian) executable: [Download transcriber_1.0_amd64.deb](https
 1. Decompress first using : xz -d transcriber_1.0_amd64.deb.xz
 2. Install using : sudo dpkg -i transcriber_1.0_amd64.deb
 
-We are currently developing a MacOS version. Stay tuned.
+### MacOS
+We are currently developing a MacOS version which will be published here at a later stage. Stay tuned.
+
 ---
 
 ## 📚 How to Cite

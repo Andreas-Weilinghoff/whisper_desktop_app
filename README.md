@@ -38,11 +38,14 @@ The latest Linux (Debian) executable: [Download transcriber_1.0_amd64.deb](https
 1. Decompress first using : xz -d transcriber_1.0_amd64.deb.xz
 2. Install using : sudo dpkg -i transcriber_1.0_amd64.deb
 
+We are currently developing a MacOS version. Stay tuned.
 ---
 
 ## 📚 How to Cite
 
 Weilinghoff, A. and Nair, S. (2025). AI Transcription Desktop App. https://github.com/Andreas-Weilinghoff/whisper_desktop_app
+
+---
 
 ## 🖼️ Screenshots
 

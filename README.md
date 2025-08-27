@@ -41,7 +41,7 @@ The latest MacOS executable: [Download AITranscriptionTool.dmg](https://drive.go
 2. Install using : sudo dpkg -i transcriber_1.0_amd64.deb
 
 ### MacOS
-1. Doible click the .dmg file to 'mount' the disk
+1. Double click the .dmg file to 'mount' the disk
 2. Double click the app icon in the newly shown window and follow on screen instructions.
 
 ---

@@ -10,6 +10,8 @@ The latest Windows executable: [Download main_app.exe](https://github.com/Andrea
 
 The latest Linux (Debian) executable: [Download transcriber_1.0_amd64.deb](https://drive.google.com/file/d/1n9JbqiXPrNrjd5grHntJNDTpKhiHRUdg/view?usp=drive_link)
 
+The latest MacOS executable: [Download AITranscriptionTool.dmg](https://drive.google.com/file/d/16691lwkThvxivVk8Qnu4JYij2f5phNAB/view?usp=drive_link)
+
 *Note: This version is a pre-release and intended for internal use only.*
 
 ---
@@ -39,7 +41,8 @@ The latest Linux (Debian) executable: [Download transcriber_1.0_amd64.deb](https
 2. Install using : sudo dpkg -i transcriber_1.0_amd64.deb
 
 ### MacOS
-We are currently developing a MacOS version which will be published here at a later stage. Stay tuned.
+1. Doible click the .dmg file to 'mount' the disk
+2. Double click the app icon in the newly shown window and follow on screen instructions.
 
 ---
 
